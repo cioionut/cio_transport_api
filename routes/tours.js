@@ -1,7 +1,18 @@
 var express = require('express');
 var router = express.Router();
-
 var mongoose = require('mongoose');
+
+var multer  = require('multer');
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  }
+});
+var upload = multer({ storage: storage })
+
 var Tour = require('../models/Tour.js');
 
 /* GET /tour listing. */
@@ -13,8 +24,10 @@ router.get('/', function(req, res, next) {
 });
 
 /* POST /tours */
-router.post('/', function(req, res, next) {
-  console.log(req.body);
+router.post('/', upload.single('file'), function(req, res, next) {
+  console.log(req.file);
+  let tour = req.body;
+  tour.images = req.file.path;
   Tour.create(req.body, function (err, tour) {
     if (err) return next(err);
     res.json(tour);
